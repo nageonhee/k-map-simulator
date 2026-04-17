@@ -50,10 +50,10 @@ RUN npm install --omit=dev
 
 # Final environment settings
 ENV NODE_ENV=production
-ENV PORT=3000
+ENV PORT=8080
 
 # Metadata for Cloud Run
-EXPOSE 3000
+EXPOSE 8080
 EXPOSE 8000
 
 # Install tsx globally in production stage
