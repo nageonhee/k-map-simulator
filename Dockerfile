@@ -31,7 +31,8 @@ RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Install schemdraw in venv
-RUN /opt/venv/bin/pip install --no-cache-dir schemdraw
+RUN /opt/venv/bin/pip install --upgrade pip
+RUN /opt/venv/bin/pip install schemdraw
 RUN chmod -R 755 /opt/venv
 
 # Copy built assets and server code
