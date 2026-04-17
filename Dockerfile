@@ -35,10 +35,10 @@ RUN /opt/venv/bin/pip install --no-cache-dir schemdraw
 RUN chmod -R 755 /opt/venv
 
 # Copy built assets and server code
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/server.ts ./
-COPY --from=builder /app/src ./src
+COPY --from=build-stage /app/dist ./dist
+COPY --from=build-stage /app/package*.json ./
+COPY --from=build-stage /app/server.ts ./
+COPY --from=build-stage /app/src ./src
 
 # Install production dependencies
 RUN npm install --omit=dev
