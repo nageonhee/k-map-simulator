@@ -14,7 +14,7 @@ async function startServer() {
 
   app.use(express.json());
 
-  const pythonCmd = 'python3';
+  const pythonCmd = '/opt/venv/bin/python3';
 
   app.post('/api/circuit', async (req, res) => {
     const { groups, varCount } = req.body;
