@@ -1,0 +1,6 @@
+{
+  "name": "K-Map Simulator",
+  "description": "A real-time Karnaugh Map simulator for 2, 3, and 4 variables with SOP/POS simplification and visual grouping.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
