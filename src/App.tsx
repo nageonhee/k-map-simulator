@@ -505,7 +505,11 @@ export default function App() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-4 sm:p-10 flex flex-col gap-8 lg:gap-10 overflow-x-hidden pt-6 lg:pt-10">
+      <main className="flex-1 p-4 sm:p-10 flex flex-col gap-8 lg:gap-10 overflow-x-hidden pt-6 lg:pt-10 relative">
+        <div className="absolute top-4 left-4 lg:top-8 lg:left-10 z-20 flex flex-col pointer-events-none select-none">
+          <div className="text-[9px] uppercase font-bold text-[var(--text-muted)] tracking-wider opacity-50">Hansung University</div>
+          <div className="text-[10px] font-medium text-[var(--text-muted)] opacity-70">2571122 Na Geonhee</div>
+        </div>
         <div className="flex-1 flex flex-col items-center justify-center relative min-h-0">
           {/* Top Toolbar - Responsive positioning */}
           <div className="w-full lg:absolute lg:top-0 lg:right-0 lg:pr-10 z-30 flex flex-col items-center lg:items-end gap-2 mb-8 lg:mb-0">
