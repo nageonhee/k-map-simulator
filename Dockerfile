@@ -30,8 +30,7 @@ ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 RUN chmod -R 755 /opt/venv
-
-RUN pip install --no-cache-dir schemdraw
+RUN /opt/venv/bin/pip install --no-cache-dir schemdraw
 
 # Install schemdraw in venv
 RUN pip install --no-cache-dir schemdraw
