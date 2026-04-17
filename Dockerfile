@@ -29,17 +29,16 @@ RUN apt-get update && apt-get install -y \
 ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-RUN chmod -R 755 /opt/venv
-RUN /opt/venv/bin/pip install --no-cache-dir schemdraw
 
 # Install schemdraw in venv
-RUN pip install --no-cache-dir schemdraw
+RUN /opt/venv/bin/pip install --no-cache-dir schemdraw
+RUN chmod -R 755 /opt/venv
 
 # Copy built assets and server code
-COPY --from=build-stage /app/dist ./dist
-COPY --from=build-stage /app/package*.json ./
-COPY --from=build-stage /app/server.ts ./
-COPY --from=build-stage /app/src ./src
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/server.ts ./
+COPY --from=builder /app/src ./src
 
 # Install production dependencies
 RUN npm install --omit=dev
@@ -54,4 +53,4 @@ EXPOSE 8080
 # Install tsx globally in production stage
 RUN npm install -g tsx
 
-CMD ["tsx", "server.ts"]
+CMD ["npx", "tsx", "server.ts"]
