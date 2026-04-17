@@ -29,6 +29,9 @@ RUN apt-get update && apt-get install -y \
 ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+RUN chmod -R 755 /opt/venv
+
+RUN pip install --no-cache-dir schemdraw
 
 # Install schemdraw in venv
 RUN pip install --no-cache-dir schemdraw
