@@ -5,6 +5,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List
 import schemdraw
+from schemdraw import elements
 from schemdraw import logic
 import re
 import io
@@ -38,7 +39,7 @@ async def generate_circuit(request: CircuitRequest):
             for i, v in enumerate(vars):
                 x = bus_x[i]
                 d += logic.Line().at((x, 0.5)).to((x, bus_bottom)).color('#e2e8f0')
-                d += logic.Label().at((x, 1.0)).label(v)
+                d += elements.Label(label=v).at((x, 1.0))
 
             # 2. Logic Gates (AND stage)
             and_outputs = []
