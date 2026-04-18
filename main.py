@@ -52,7 +52,7 @@ async def generate_circuit(request: CircuitRequest):
                 literals = [{'var': p[0], 'inverted': p.endswith("'")} for p in parts]
 
                 gate_y = - (valid_idx * 5 + 3)
-                gate = d.add(logic.And(inputs=len(literals)).at((12, gate_y)))
+                gate = d.add(logic.And(n=len(literals)).at((12, gate_y)))
                 
                 for i_idx, lit in enumerate(literals):
                     v_idx = vars.index(lit['var'])
@@ -81,7 +81,7 @@ async def generate_circuit(request: CircuitRequest):
                 or_x = 22
                 total_h = (valid_idx * 5 + 3)
                 or_y = - total_h / 2
-                or_gate = d.add(logic.Or(inputs=len(and_outputs)).at((or_x, or_y)))
+                or_gate = d.add(logic.Or(n=len(and_outputs)).at((or_x, or_y)))
                 
                 for i_idx, out_pos in enumerate(and_outputs):
                     in_node = 'in%d' % (i_idx + 1)
@@ -100,8 +100,8 @@ async def generate_circuit(request: CircuitRequest):
             svg_data = d.get_imagedata('svg').decode('utf-8')
             
             # Clean up width/height for responsiveness if needed
-            svg_data = re.sub(r'width="\\d+(?:\\.\\d+)?pt"', '', svg_data)
-            svg_data = re.sub(r'height="\\d+(?:\\.\\d+)?pt"', '', svg_data)
+            svg_data = re.sub(r'width="\d+(?:\.\d+)?pt"', '', svg_data)
+            svg_data = re.sub(r'height="\d+(?:\.\d+)?pt"', '', svg_data)
             
             return {"svg": svg_data}
             
