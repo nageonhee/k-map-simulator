@@ -410,7 +410,7 @@ export default function App() {
               <input 
                 id="minmax-input"
                 type="text" 
-                placeholder="0, 1, 3, ..." 
+                placeholder="0,1,2,..." 
                 disabled={activeInputSource === 'expression'}
                 onChange={(e) => applyMinterms(e.target.value)}
                 className={cn(
@@ -474,7 +474,12 @@ export default function App() {
               <input 
                 id="expr-input"
                 type="text" 
-                placeholder={varCount === 2 ? "A + B'" : "AB + CD'"} 
+                placeholder={
+                  varCount === 2 ? "A+B'" : 
+                  varCount === 3 ? "AB+C'" : 
+                  varCount === 4 ? "AB+CD'" : 
+                  "AB+CDE'"
+                } 
                 disabled={activeInputSource === 'minmax'}
                 onChange={(e) => applyExpression(e.target.value)}
                 className={cn(
