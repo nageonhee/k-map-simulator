@@ -345,6 +345,10 @@ export default function App() {
     <div className="flex flex-col lg:flex-row min-h-screen bg-[var(--background)] text-[var(--foreground)] font-sans">
       {/* Sidebar */}
       <aside className="w-full lg:w-[280px] bg-[var(--sidebar-bg)] border-b lg:border-b-0 lg:border-r border-[var(--border-color)] p-6 lg:px-8 lg:py-7 flex flex-col gap-6 lg:gap-8 shrink-0">
+        <div className="flex lg:hidden flex-col pointer-events-none select-none -mt-2 -mb-2">
+          <div className="text-[9px] uppercase font-bold text-[var(--text-muted)] tracking-wider opacity-50">Hansung University</div>
+          <div className="text-[10px] font-medium text-[var(--text-muted)] opacity-70">2571122 Na Geonhee</div>
+        </div>
         <div>
           <h1 className="font-serif italic text-2xl text-[var(--accent-olive)] mb-2">K-Map Simulator</h1>
           <p className="text-sm text-[var(--text-muted)] leading-relaxed">
@@ -506,7 +510,7 @@ export default function App() {
 
       {/* Main Content */}
       <main className="flex-1 p-4 sm:p-10 flex flex-col gap-8 lg:gap-10 overflow-x-hidden pt-6 lg:pt-10 relative">
-        <div className="absolute top-4 left-4 lg:top-8 lg:left-10 z-20 flex flex-col pointer-events-none select-none">
+        <div className="hidden lg:flex absolute top-4 left-4 lg:top-8 lg:left-10 z-20 flex-col pointer-events-none select-none">
           <div className="text-[9px] uppercase font-bold text-[var(--text-muted)] tracking-wider opacity-50">Hansung University</div>
           <div className="text-[10px] font-medium text-[var(--text-muted)] opacity-70">2571122 Na Geonhee</div>
         </div>
@@ -695,20 +699,28 @@ export default function App() {
                       <div className="flex flex-wrap items-center gap-1 sm:gap-y-2">
                         {sopExpression === "0" ? "0" : 
                          sopExpression === "1" ? "1" :
-                         Array.from(new Set(sopGroups.map(g => g.expression))).sort().map((expr: string, i, arr) => {
-                           const group = sopGroups.find(g => g.expression === expr);
-                           return (
-                             <React.Fragment key={expr}>
-                              <span 
-                                className="px-1 py-0.5 sm:px-1.5 sm:py-1.5 rounded-md flex items-center leading-none"
-                                style={{ backgroundColor: group?.color }}
-                              >
-                                {renderTerm(expr)}
-                              </span>
-                              {i < arr.length - 1 && <span className="mx-0.5 sm:mx-1 text-xs sm:text-sm opacity-40">+</span>}
-                             </React.Fragment>
-                           );
-                         })
+                         Array.from(new Set(sopGroups.map(g => g.expression)))
+                           .sort((a, b) => {
+                             const getLiterals = (s: string) => s.replace(/[()'+ •]/g, '').length;
+                             const la = getLiterals(a);
+                             const lb = getLiterals(b);
+                             if (la !== lb) return la - lb;
+                             return a.localeCompare(b);
+                           })
+                           .map((expr: string, i, arr) => {
+                             const group = sopGroups.find(g => g.expression === expr);
+                             return (
+                               <React.Fragment key={expr}>
+                                <span 
+                                  className="px-1 py-0.5 sm:px-1.5 sm:py-1.5 rounded-md flex items-center leading-none"
+                                  style={{ backgroundColor: group?.color }}
+                                >
+                                  {renderTerm(expr)}
+                                </span>
+                                {i < arr.length - 1 && <span className="mx-0.5 sm:mx-1 text-xs sm:text-sm opacity-40">+</span>}
+                               </React.Fragment>
+                             );
+                           })
                         }
                       </div>
                     </div>
@@ -727,20 +739,28 @@ export default function App() {
                       <div className="flex flex-wrap items-center gap-1 sm:gap-y-2">
                         {posExpression === "0" ? "0" : 
                          posExpression === "1" ? "1" :
-                         Array.from(new Set(posGroups.map(g => g.expression))).sort().map((expr: string, i, arr) => {
-                           const group = posGroups.find(g => g.expression === expr);
-                           return (
-                             <React.Fragment key={expr}>
-                              <span 
-                                className="px-1 py-0.5 sm:px-1.5 sm:py-1.5 rounded-md flex items-center leading-none"
-                                style={{ backgroundColor: group?.color }}
-                              >
-                                {renderTerm(expr)}
-                              </span>
-                              {i < arr.length - 1 && <span className="mx-0.5 sm:mx-1 text-xs sm:text-sm opacity-40">•</span>}
-                             </React.Fragment>
-                           );
-                         })
+                         Array.from(new Set(posGroups.map(g => g.expression)))
+                           .sort((a, b) => {
+                             const getLiterals = (s: string) => s.replace(/[()'+ •]/g, '').length;
+                             const la = getLiterals(a);
+                             const lb = getLiterals(b);
+                             if (la !== lb) return la - lb;
+                             return a.localeCompare(b);
+                           })
+                           .map((expr: string, i, arr) => {
+                             const group = posGroups.find(g => g.expression === expr);
+                             return (
+                               <React.Fragment key={expr}>
+                                <span 
+                                  className="px-1 py-0.5 sm:px-1.5 sm:py-1.5 rounded-md flex items-center leading-none"
+                                  style={{ backgroundColor: group?.color }}
+                                >
+                                  {renderTerm(expr)}
+                                </span>
+                                {i < arr.length - 1 && <span className="mx-0.5 sm:mx-1 text-xs sm:text-sm opacity-40">•</span>}
+                               </React.Fragment>
+                             );
+                           })
                         }
                       </div>
                     </div>
