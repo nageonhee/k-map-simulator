@@ -3,14 +3,10 @@ FROM node:20-slim AS build-stage
 
 WORKDIR /app
 
-# Install build dependencies
 COPY package*.json ./
 RUN npm install
 
-# Copy project files
 COPY . .
-
-# Build the frontend (Vite)
 RUN npm run build
 
 # Production stage
@@ -18,46 +14,40 @@ FROM node:20-slim AS production-stage
 
 WORKDIR /app
 
-# Install Python 3, venv, and other dependencies
+# Python 설치
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-venv \
     python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
-# Set up Virtual Environment
+# Python 가상환경
 ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-# Copy and install Python dependencies
+# Python 패키지 설치
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy built assets and server code
+# 빌드된 파일 복사
 COPY --from=build-stage /app/dist ./dist
 COPY --from=build-stage /app/package*.json ./
 COPY --from=build-stage /app/server.ts ./
 COPY --from=build-stage /app/src ./src
 COPY --from=build-stage /app/main.py ./
-COPY --from=build-stage /app/start.sh ./
+COPY --from=build-stage /app/tsconfig.json ./
 
-# Make startup script executable
-RUN chmod +x ./start.sh
-
-# Install production dependencies
-RUN npm install --omit=dev
-
-# Final environment settings
+# 환경 설정
 ENV NODE_ENV=production
 ENV PORT=8080
 
-# Metadata for Cloud Run
+# 8080만 노출
 EXPOSE 8080
-EXPOSE 8000
 
-# Install tsx globally in production stage
+# 전역 설치
 RUN npm install -g tsx
+RUN npm install --omit=dev
 
-# Start both servers
-CMD ["./start.sh"]
+# Node 서버 실행 (Python은 Node 내에서 자동 시작)
+CMD ["tsx", "server.ts"]
