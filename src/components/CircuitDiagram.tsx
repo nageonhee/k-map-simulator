@@ -55,7 +55,6 @@ export const CircuitDiagram: React.FC<CircuitDiagramProps> = ({ groups, varCount
   let activeVarCount = varCount;
   let isExample = false;
 
-  // 입력된 논리식이 없을 경우, 설명 예시(AB + A'C)를 기본으로 렌더링합니다.
   if (validGroups.length === 0) {
     validGroups = [
       { id: 'ex1', expression: "AB", color: '', cells: [] },
@@ -78,7 +77,7 @@ export const CircuitDiagram: React.FC<CircuitDiagramProps> = ({ groups, varCount
 
   const AND_X = getDropX(activeVarCount - 1) + 80;
 
-  // 불필요한 연장선을 방지하기 위한 최대 Y 좌표 추적 배열
+  // 변수가 사용되는 가장 낮은(최하단) Y 좌표를 기록합니다.
   const maxDropY = Array(activeVarCount).fill(0);
   for (let i = 0; i < activeVarCount; i++) maxDropY[i] = getVarY(i);
 
@@ -94,7 +93,7 @@ export const CircuitDiagram: React.FC<CircuitDiagramProps> = ({ groups, varCount
       const inputY = laneY - h / 2 + (lIdx + 0.5) * (h / inputs);
       
       if (varIdx !== -1 && inputY > maxDropY[varIdx]) {
-        maxDropY[varIdx] = inputY;
+        maxDropY[varIdx] = inputY; // 최하단 Y 좌표 업데이트
       }
       return { ...lit, varIdx, inputY };
     });
@@ -116,29 +115,36 @@ export const CircuitDiagram: React.FC<CircuitDiagramProps> = ({ groups, varCount
     <div className="w-full overflow-hidden rounded-[40px] border border-gray-200 bg-white p-4 shadow-sm">
       <div className="mb-4">
         <h3 className="text-sm font-bold text-black uppercase tracking-wider">
-          {isExample ? "Logic Circuit Diagram (Example: AB + A'C)" : "Logic Circuit Diagram"}
+          {isExample ? "Logic Circuit Diagram (Example: AB + A'C)" : "Exact Routed Logic Circuit"}
         </h3>
       </div>
 
       <div className="relative w-full overflow-x-auto flex justify-center bg-white border border-gray-200 p-8 rounded-2xl">
         <svg viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`} width="100%" style={{ maxHeight: '700px' }} xmlns="http://www.w3.org/2000/svg">
-          <g stroke="#000" strokeWidth="2.5" fill="none" strokeLinejoin="miter">
+          {/* strokeLinecap="square" 속성을 추가하여 선이 만나는 모서리를 날카로운 직각으로 마감합니다. */}
+          <g stroke="#000" strokeWidth="2.5" fill="none" strokeLinejoin="miter" strokeLinecap="square">
             
-            {/* 1. 변수 입력 및 수직 분기 라인 (직각 꺾임) */}
+            {/* 1. 변수 입력 및 수직 라인 (공통 버스 없음, 최상단 점 제거) */}
             {variables.map((v, i) => {
               const varY = getVarY(i);
               const dropX = getDropX(i);
+              const isUsed = maxDropY[i] > varY;
+
               return (
                 <g key={`trunk-${v}`}>
                   <text x={VAR_START_X} y={varY + 6} fill="#000" fontSize="18" fontWeight="900" stroke="none" fontFamily="sans-serif">{v}</text>
-                  <line x1={VAR_START_X + 25} y1={varY} x2={dropX} y2={varY} />
-                  <circle cx={dropX} cy={varY} r="4.5" fill="#000" stroke="none" />
-                  <line x1={dropX} y1={varY} x2={dropX} y2={maxDropY[i]} />
+                  {isUsed ? (
+                    // 점(Dot) 렌더링을 완전히 제거하고 단일 Polyline으로 L자 모서리를 그립니다.
+                    <polyline points={`${VAR_START_X + 25},${varY} ${dropX},${varY} ${dropX},${maxDropY[i]}`} />
+                  ) : (
+                    // 사용되지 않는 변수는 짧은 가로선만 표시
+                    <line x1={VAR_START_X + 25} y1={varY} x2={dropX} y2={varY} />
+                  )}
                 </g>
               );
             })}
 
-            {/* 2. 논리항 게이트 및 수평 배선 */}
+            {/* 2. 논리항 게이트 및 개별 수평 배선 (T-Junction에만 점 생성) */}
             {termLayouts.map((term, gIdx) => {
               const { inputs, h, laneY, inputCoords } = term;
               let termOutputX = AND_X;
@@ -148,10 +154,15 @@ export const CircuitDiagram: React.FC<CircuitDiagramProps> = ({ groups, varCount
                 if (inp.varIdx === -1) return null;
                 const dropX = getDropX(inp.varIdx);
                 termOutputX = AND_X + 24;
+                
+                // 현재 연결되는 Y좌표가 해당 변수 수직선의 최하단(maxDropY)보다 작으면 분기(Split)로 간주
+                const isSplit = (maxDropY[inp.varIdx] - inp.inputY) > 1;
 
                 return (
                   <g key={`term-${gIdx}`}>
-                    <circle cx={dropX} cy={inp.inputY} r="3.5" fill="#000" stroke="none" />
+                    {/* 분기점(T-junction)일 때만 Dot을 그립니다. 최하단 모서리(L-corner)일 때는 생략합니다. */}
+                    {isSplit && <circle cx={dropX} cy={inp.inputY} r="4.5" fill="#000" stroke="none" />}
+                    
                     <line x1={dropX} y1={inp.inputY} x2={AND_X - 25} y2={inp.inputY} />
                     {inp.inverted && <NotGate x={AND_X - 25} y={inp.inputY} />}
                     <line x1={AND_X} y1={inp.inputY} x2={termOutputX} y2={inp.inputY} />
@@ -172,10 +183,14 @@ export const CircuitDiagram: React.FC<CircuitDiagramProps> = ({ groups, varCount
                   {inputCoords.map((inp, lIdx) => {
                     if (inp.varIdx === -1) return null;
                     const dropX = getDropX(inp.varIdx);
+                    // 현재 연결되는 Y좌표가 해당 변수 수직선의 최하단(maxDropY)보다 작으면 분기(Split)로 간주
+                    const isSplit = (maxDropY[inp.varIdx] - inp.inputY) > 1;
 
                     return (
                       <g key={`wire-${gIdx}-${lIdx}`}>
-                        <circle cx={dropX} cy={inp.inputY} r="3.5" fill="#000" stroke="none" />
+                        {/* 분기점(T-junction)일 때만 Dot을 그립니다. 최하단 모서리(L-corner)일 때는 생략합니다. */}
+                        {isSplit && <circle cx={dropX} cy={inp.inputY} r="4.5" fill="#000" stroke="none" />}
+                        
                         <line x1={dropX} y1={inp.inputY} x2={AND_X - 25} y2={inp.inputY} />
                         {inp.inverted ? (
                           <NotGate x={AND_X - 25} y={inp.inputY} />
